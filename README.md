@@ -4,6 +4,10 @@
  
   https://guileless-entremet-5e2864.netlify.app/
 
+# backend deploy link :
+
+  https://s76-abhinivesh-capstone-indiehub-1.onrender.com
+
 ## IndieHub: Connect, Collaborate, Create
 
 ## 🎵 Vision
