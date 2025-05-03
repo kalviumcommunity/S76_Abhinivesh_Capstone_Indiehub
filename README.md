@@ -1,6 +1,10 @@
 # S76_Abhinivesh_Capstone_Indiehub:
 
-# IndieHub: Connect, Collaborate, Create
+# Frontend deploy link :
+ 
+  https://guileless-entremet-5e2864.netlify.app/
+
+## IndieHub: Connect, Collaborate, Create
 
 ## 🎵 Vision
 IndieHub aims to revolutionize how independent musicians connect, collaborate, and create music together. We're eliminating geographical barriers, streamlining the collaboration process, and providing tools that empower artists to maintain creative control while expanding their reach.
