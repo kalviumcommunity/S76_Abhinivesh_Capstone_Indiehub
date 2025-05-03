@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Email is required'],
     unique: true,
-    lowercase: true
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
   },
   username: {
     type: String,
@@ -26,7 +27,11 @@ const userSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: "2025-05-03 06:14:58"
+  },
+  createdBy: {
+    type: String,
+    default: "ABHISA888"
   }
 });
 
