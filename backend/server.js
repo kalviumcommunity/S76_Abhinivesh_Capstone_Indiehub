@@ -40,7 +40,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/api/users', require('./routes/usersRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
 
 // Optional: add public folder for static files (e.g., frontend or uploads)
 app.use(express.static(path.join(__dirname, 'public')));
