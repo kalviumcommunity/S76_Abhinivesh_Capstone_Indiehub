@@ -101,27 +101,33 @@ exports.getAllUsers = async (req, res) => {
 // Get a specific user's profile
 exports.getUserProfile = async (req, res) => {
   try {
-    const userId = req.params.id;
+      const userId = req.params.id;
 
-    const user = await User.findById(userId).select('-password');
+      // Authorization check
+      if (!req.user._id.equals(userId) && !req.user.isAdmin) {
+          return res.status(403).json({
+              success: false,
+              message: 'Not authorized to view this profile'
+          });
+      }
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+      const user = await User.findById(userId).select('-password');
+      if (!user) {
+          return res.status(404).json({
+              success: false,
+              message: 'User not found'
+          });
+      }
 
-    res.status(200).json({
-      success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        profilePicture: user.profilePicture,
-        createdAt: user.createdAt,
-      },
-    });
-  } catch (err) {
-    console.error('Error fetching user profile:', err);
-    res.status(500).json({ message: 'Server error while fetching user profile' });
+      res.status(200).json({
+          success: true,
+          data: user
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: error.message
+      });
   }
 };
 
@@ -129,48 +135,83 @@ exports.getUserProfile = async (req, res) => {
 // Update a user's profile
 exports.updateUserProfile = async (req, res) => {
   try {
-    const userId = req.params.id; 
-    const updates = req.body; 
+      const userId = req.params.id;
 
-    // Only allow the user themselves or an admin to update
-    if (req.user._id.toString() !== userId && !req.user.isAdmin) {
-      return res.status(403).json({ message: 'Not authorized to update this profile' });
-    }
+      // Authorization check
+      if (!req.user._id.equals(userId) && !req.user.isAdmin) {
+          return res.status(403).json({
+              success: false,
+              message: 'Not authorized to update this profile'
+          });
+      }
 
-    // Prevent email or password updates from this endpoint
-    if (updates.password || updates.email) {
-      return res.status(400).json({ message: 'Email and password updates are not allowed from this endpoint.' });
-    }
+      const { fullName, bio, profileImageUrl, instruments, genres } = req.body;
 
-    // Update the user's profile
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
-      new: true, 
-      runValidators: true, 
-    }).select('-password'); 
+      const updatedFields = {};
+      if (fullName) updatedFields.fullName = fullName;
+      if (bio) updatedFields.bio = bio;
+      if (profileImageUrl) updatedFields.profileImageUrl = profileImageUrl;
+      if (instruments) updatedFields.instruments = instruments;
+      if (genres) updatedFields.genres = genres;
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' }); 
-    }
+      updatedFields.updatedAt = new Date();
 
-    // Generate a new JWT token for the updated user
-    const token = jwt.sign({ id: updatedUser._id }, process.env.JWT_SECRET, {
-      expiresIn: '30d',
-    });
+      const user = await User.findByIdAndUpdate(userId, updatedFields, {
+          new: true,
+          runValidators: true,
+          context: 'query'
+      }).select('-password');
 
-    // Respond with the updated user and token
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: updatedUser._id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        profilePicture: updatedUser.profilePicture,
-        createdAt: updatedUser.createdAt,
-      },
-    });
-  } catch (err) {
-    console.error(err); // Log the error
-    res.status(500).json({ message: 'Server error' }); 
+      if (!user) {
+          return res.status(404).json({
+              success: false,
+              message: 'User not found'
+          });
+      }
+
+      res.status(200).json({
+          success: true,
+          message: 'Profile updated successfully',
+          data: user
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: error.message
+      });
+  }
+};
+
+
+// Delete a user account
+exports.deleteUserProfile = async (req, res) => {
+  try {
+      const userId = req.params.id;
+
+      // Authorization check
+      if (!req.user._id.equals(userId) && !req.user.isAdmin) {
+          return res.status(403).json({
+              success: false,
+              message: 'Not authorized to delete this profile'
+          });
+      }
+
+      const user = await User.findByIdAndDelete(userId);
+      if (!user) {
+          return res.status(404).json({
+              success: false,
+              message: 'User not found'
+          });
+      }
+
+      res.status(200).json({
+          success: true,
+          message: 'User profile deleted successfully'
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: error.message
+      });
   }
 };
