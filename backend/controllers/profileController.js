@@ -3,13 +3,24 @@ const { User } = require('../models/ProfileSchema');
 // Get user profile by ID
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
+        const userId = req.params.id;
+
+        // Authorization check
+        if (!req.user._id.equals(userId) && !req.user.isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to view this profile'
+            });
+        }
+
+        const user = await User.findById(userId).select('-password');
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: 'User not found'
             });
         }
+
         res.status(200).json({
             success: true,
             data: user
@@ -25,6 +36,16 @@ exports.getUserProfile = async (req, res) => {
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
     try {
+        const userId = req.params.id;
+
+        // Authorization check
+        if (!req.user._id.equals(userId) && !req.user.isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to update this profile'
+            });
+        }
+
         const { fullName, bio, profileImageUrl, instruments, genres } = req.body;
 
         const updatedFields = {};
@@ -36,7 +57,7 @@ exports.updateUserProfile = async (req, res) => {
 
         updatedFields.updatedAt = new Date();
 
-        const user = await User.findByIdAndUpdate(req.params.id, updatedFields, {
+        const user = await User.findByIdAndUpdate(userId, updatedFields, {
             new: true,
             runValidators: true,
             context: 'query'
@@ -45,13 +66,13 @@ exports.updateUserProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: 'User not found'
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Profile updated successfully",
+            message: 'Profile updated successfully',
             data: user
         });
     } catch (error) {
@@ -62,19 +83,31 @@ exports.updateUserProfile = async (req, res) => {
     }
 };
 
+
 // Delete user profile
 exports.deleteUserProfile = async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        const userId = req.params.id;
+
+        // Authorization check
+        if (!req.user._id.equals(userId) && !req.user.isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to delete this profile'
+            });
+        }
+
+        const user = await User.findByIdAndDelete(userId);
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: 'User not found'
             });
         }
+
         res.status(200).json({
             success: true,
-            message: "User profile deleted successfully"
+            message: 'User profile deleted successfully'
         });
     } catch (error) {
         res.status(500).json({
