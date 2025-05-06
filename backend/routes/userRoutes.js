@@ -8,5 +8,4 @@ router.post('/login', loginUser);
 router.get('/', getAllUsers);
 router.get('/:id', protect, getUserProfile);
 router.put('/:id',protect,updateUserProfile)
-// router.delete('/:id',protect,deleteUserProfile)
 module.exports = router;
